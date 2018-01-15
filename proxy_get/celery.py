@@ -29,8 +29,8 @@ CELERY_QUEUES = (
         routing_key='{}_detail_key'.format(prefix)
     ),
     Queue(
-        '{}_validity_check'.format(prefix),
-        Exchange('{}_validity_check'.format(prefix)),
+        '{}_validity'.format(prefix),
+        Exchange('{}_validity'.format(prefix)),
         routing_key='{}_validity_check_key'.format(prefix)
     ),
 )
@@ -45,11 +45,11 @@ CELERY_ROUTES = {
         'routing_key': '{}_detail_key'.format(prefix)
     },
     '{}.tasks.arousal_validity_check'.format(app_name): {
-        'queue': '{}_validity_check'.format(prefix),
+        'queue': '{}_validity'.format(prefix),
         'routing_key': '{}_validity_check_key'.format(prefix)
     },
     '{}.tasks.validity_check_async'.format(app_name): {
-        'queue': '{}_validity_check'.format(prefix),
+        'queue': '{}_validity'.format(prefix),
         'routing_key': '{}_validity_check_key'.format(prefix)
     },
 }

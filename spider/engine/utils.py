@@ -10,8 +10,10 @@ from utils import conf_parser
 
 
 def makeup_opener(ip, port):
-    proxies = {'http': '{ip}:{port}'.format(ip=ip, port=port),
-               'https': '{ip}:{port}'.format(ip=ip, port=port)}
+    proxies = {
+        'http': '{ip}:{port}'.format(ip=ip, port=port),
+        'https': '{ip}:{port}'.format(ip=ip, port=port)
+    }
     proxy_header = urllib2.ProxyHandler(proxies)
     opener = urllib2.build_opener(proxy_header)
     return opener
@@ -28,9 +30,15 @@ def is_valid(ip, port, retry=None):
         )
         return True
     except (
-            urllib2.HTTPError, urllib2.URLError, socket.timeout,
-            httplib.BadStatusLine, httplib.BAD_REQUEST, httplib.NotConnected,
-            httplib.FORBIDDEN, httplib.HTTPException, IOError
+            urllib2.HTTPError,
+            urllib2.URLError,
+            socket.timeout,
+            httplib.BadStatusLine,
+            httplib.BAD_REQUEST,
+            httplib.NotConnected,
+            httplib.FORBIDDEN,
+            httplib.HTTPException,
+            IOError
     ) as err:
         logging.debug('retry {current} of {count} {ip} {port} invalid. detail: {err}'.format(
             ip=ip,

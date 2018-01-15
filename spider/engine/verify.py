@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import threading
+import time
 
 from spider.engine.utils import is_valid
 from utils import conf_parser
@@ -17,7 +18,7 @@ class VerifyProxyValidity(threading.Thread):
 
     def run(self):
         if is_valid(self.ip, self.port):
-            self.db_engine.update(ip=self.ip, port=self.port)
+            self.db_engine.update(ip=self.ip, port=self.port, verifyTimestamp=int(time.time()))
         else:
             self.db_engine.remove(ip=self.ip, port=self.port)
 
@@ -31,7 +32,7 @@ class ValidityCheck(object):
 
     def _check(self, ip, port):
         if is_valid(ip, port):
-            self.db_engine.update(ip=ip, port=port)
+            self.db_engine.update(ip=ip, port=port, verifyTimestamp=int(time.time()))
         else:
             self.db_engine.remove(ip=ip, port=port)
 
@@ -41,15 +42,9 @@ class ValidityCheck(object):
             while index < len(self.proxies_list):
                 if threading.activeCount() < self.thread_count:
                     proxies = self.proxies_list[index]
-                    thread = VerifyProxyValidity(
-                        ip=proxies.get('ip'),
-                        port=proxies.get('port')
-                    )
+                    thread = VerifyProxyValidity(ip=proxies.get('ip'), port=proxies.get('port'))
                     thread.start()
                     index += 1
             return
         for proxies in self.proxies_list:
-            self._check(
-                ip=proxies.get('ip'),
-                port=proxies.get('port')
-            )
+            self._check(ip=proxies.get('ip'), port=proxies.get('port'))

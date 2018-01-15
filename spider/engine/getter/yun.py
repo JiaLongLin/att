@@ -23,7 +23,7 @@ class GetterDetail(threading.Thread):
 class Getter(GetterBase):
     def __init__(self):
         super(Getter, self).__init__()
-        self.links = self.links_base.get('yun-daili')
+        self.links = self.links_base.get('yun')
 
     def parser(self, context):
         soup = bs4.BeautifulSoup(context, 'html.parser')

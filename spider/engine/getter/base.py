@@ -11,7 +11,6 @@ import bs4
 import requests
 from spider.engine.utils import is_valid
 
-from spider.links import LINKS
 from utils import conf_parser
 from utils import makeup_header
 from utils.db.engine import RedisEngine
@@ -24,15 +23,22 @@ class GetterBase(object):
         self.thread = conf_parser.GETTER_THREAD
         self.thread_count = conf_parser.GETTER_THREAD_COUNT
         self.db_engine = RedisEngine()
-        self.links_base = LINKS
+        self.links_base = conf_parser.LINKS
         self.proxies = None
+        self.proxy = None
 
     def __del__(self):
         self.session.close()
+        if self.proxy:
+            self.db_engine.unlock(**self.proxy)
 
     @property
     def get_proxy(self):
         proxy = self.db_engine.get(single=True)
+        self.proxy = {
+            'ip': proxy.get('ip'),
+            'port': proxy.get('port')
+        }
         if not proxy:
             return None
         proxies = {
@@ -60,6 +66,8 @@ class GetterBase(object):
                 requests.exceptions.ConnectTimeout,
                 requests.exceptions.HTTPError
         ) as err:
+            if self.proxy:
+                self.db_engine.unlock(**self.proxy)     # release
             logging.error('{url} connect error. detail: {err}'.format(
                 url=url, err=err
             ))

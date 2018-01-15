@@ -10,15 +10,16 @@ class Getter(GetterBase):
         self.links = self.links_base.get('ip181')
 
     def do_collect(self):
-        content = self.get_context(self.links)
-        soup = self.makeup_soup(content)
-        tbody = soup.find('tbody')
-        try:
-            trs = tbody.findAll('tr')[1:]
-            for tr in trs:
-                tds = tr.findAll('td')
-                ip = tds[0].get_text()
-                port = tds[1].get_text()
-                self.is_valid(ip, port)
-        except IndexError:
-            return
+        for link in self.links:
+            content = self.get_context(link)
+            soup = self.makeup_soup(content)
+            tbody = soup.find('tbody')
+            try:
+                trs = tbody.findAll('tr')[1:]
+                for tr in trs:
+                    tds = tr.findAll('td')
+                    ip = tds[0].get_text()
+                    port = tds[1].get_text()
+                    self.is_valid(ip, port)
+            except IndexError:
+                pass

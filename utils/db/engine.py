@@ -58,8 +58,8 @@ class RedisEngine(object):
         pipeline.lpush(self.activate_key, key)
         return pipeline.execute()
 
-    def get(self, single=None, random=True, length=1):
-        lua_script1 = """
+    def get(self, single=None):
+        get_all_lua = """
         redis.call('select', 15)
         local activateKey = KEYS[1]
         local allList = redis.call('lrange', activateKey, 0, -1)
@@ -106,7 +106,7 @@ class RedisEngine(object):
         if not self.client:
             return None
         if not single:
-            script = self.client.register_script(lua_script1)
+            script = self.client.register_script(get_all_lua)
             ret = script(keys=[self.activate_key], args=[None])
             _ret = []
             for item in json.loads(ret):
@@ -118,8 +118,22 @@ class RedisEngine(object):
         if not key:
             return None
         proxy = self.client.hgetall(key)
-        self.client.hset(key, 'inUse', True)
+        self.update(key=key, inUse=True)
         return proxy
+
+    def lock(self, ip=None, port=None, key=None):
+        if not all(locals()):
+            raise ValueError
+        if not key:
+            key = self.proxy_key.format(ip=ip, port=port)
+        return self.update(key=key, inUse=True)
+
+    def unlock(self, ip=None, port=None, key=None):
+        if not all(locals()):
+            raise ValueError
+        if not key:
+            key = self.proxy_key.format(ip=ip, port=port)
+        return self.update(key=key, inUse=False)
 
     def remove(self, ip, port):
         pipeline = self.client.pipeline()
@@ -128,13 +142,16 @@ class RedisEngine(object):
         pipeline.expire(proxy_key, 0)
         return pipeline.execute()
 
-    def update(self, ip, port, **kwargs):
+    def update(self, ip=None, port=None, key=None, **kwargs):
         timestamp = int(time.time())
-        proxy_key = self.proxy_key.format(ip=ip, port=port)
+        if key:
+            proxy_key = key
+        else:
+            proxy_key = self.proxy_key.format(ip=ip, port=port)
         pipeline = self.client.pipeline()
         for key, val in kwargs.items():
             pipeline.hset(proxy_key, key, val)
-        pipeline.hset(proxy_key, 'verifyTimestamp', timestamp)
+        pipeline.hset(proxy_key, 'updateAt', timestamp)
         return pipeline.execute()
 
     def cleanup(self):

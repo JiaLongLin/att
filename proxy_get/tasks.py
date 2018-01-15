@@ -26,15 +26,6 @@ def import_class(import_str):
         ))
 
 
-def import_object(import_str, *args, **kwargs):
-    return import_class(import_str)(*args, **kwargs)
-
-
-def import_module(import_str):
-    __import__(import_str)
-    return sys.modules[import_str]
-
-
 @app.task
 def arousal_getter():
     getter_classes = conf_parser.GETTER_CLASSES
@@ -45,10 +36,8 @@ def arousal_getter():
 @app.task
 def getter_detail_async(getter_class):
     try:
-        getter_class = import_class('spider.engine.getter.{getter_name}.Getter'.format(
-            getter_name=getter_class.strip()
-        ))
-        getter = getter_class()
+        module_class = import_class(getter_class)
+        getter = module_class()
         getter.do_collect()
     except ImportError:
         return

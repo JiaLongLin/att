@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import os
 import threading
 import time
+import logging
 
 from spider.engine.utils import is_valid
-from utils import conf_parser
+from utils import conf_parser, log
 from utils.db.engine import RedisEngine
+
+
+if conf_parser.VERBOSE:
+    level = 'DEBUG'
+else:
+    level = 'INFO'
+
+log_file = os.path.join(conf_parser.LOG_PATH, 'valid.log')
+log.init_log(log_path=log_file, level=level)
 
 
 class VerifyProxyValidity(threading.Thread):
@@ -18,8 +29,14 @@ class VerifyProxyValidity(threading.Thread):
 
     def run(self):
         if is_valid(self.ip, self.port):
-            self.db_engine.update(ip=self.ip, port=self.port, verifyTimestamp=int(time.time()))
+            self.db_engine.update(
+                ip=self.ip,
+                port=self.port,
+                verifyTimestamp=int(time.time()),
+                inUse=False
+            )
         else:
+            logging.debug('{}:{} invalid, will be to remove from db.'.format(self.ip, self.port))
             self.db_engine.remove(ip=self.ip, port=self.port)
 
 
@@ -34,6 +51,7 @@ class ValidityCheck(object):
         if is_valid(ip, port):
             self.db_engine.update(ip=ip, port=port, verifyTimestamp=int(time.time()))
         else:
+            logging.debug('{}:{} invalid, will be to remove from db.'.format(ip, port))
             self.db_engine.remove(ip=ip, port=port)
 
     def do_check(self):

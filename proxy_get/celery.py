@@ -1,17 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from os import environ
+import os
 
 from celery import Celery, platforms
 from celery.schedules import crontab
 from kombu import Queue, Exchange
 from django import setup
 
-from utils import conf_parser as parser
+from utils import conf_parser as parser, log
 
-environ.setdefault('DJANGO_SETTINGS_MODULE', 'att.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'att.settings')
 setup()
+
+log_file = os.path.join(parser.LOG_PATH, 'getter.log')
+if not os.path.exists(parser.LOG_PATH):
+    os.mkdir(parser.LOG_PATH)
+
+if parser.VERBOSE:
+    level = 'DEBUG'
+else:
+    level = 'INFO'
+
+log.init_log(log_path=log_file, level=level)
 
 prefix = 'proxy'
 app_name = '{}_get'.format(prefix)

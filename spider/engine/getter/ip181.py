@@ -11,7 +11,7 @@ class Getter(GetterBase):
 
     def do_collect(self):
         for link in self.links:
-            content = self.get_context(link)
+            content = self.get_content(link)
             soup = self.makeup_soup(content)
             tbody = soup.find('tbody')
             try:

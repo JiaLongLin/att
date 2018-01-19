@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
+from utils.log import init_log
+from utils import conf_parser
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,9 +27,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'vy11tql8r2qc0@kugn44(y0ax551985seck5u7%ar_ah&v%9w%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = conf_parser.VERBOSE
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -118,3 +122,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+log_file = os.path.join(conf_parser.LOG_PATH, 'getter.log')
+if not os.path.exists(conf_parser.LOG_PATH):
+    os.mkdir(conf_parser.LOG_PATH)
+
+if conf_parser.VERBOSE:
+    level = 'DEBUG'
+else:
+    level = 'INFO'
+
+init_log(log_path=log_file, level=level)

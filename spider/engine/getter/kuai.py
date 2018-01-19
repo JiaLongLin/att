@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import logging
 import threading
 
 from spider.engine.getter.base import GetterBase
@@ -16,12 +17,13 @@ class Getter(GetterBase):
         for link in self.links:
             start_url = self.get_start_url(link)
             for item in range(1, 50):
-                params.append({'link': '{start_url}{page_num}/'.format(start_url=start_url, page_num=item)})
+                params.append({'url': '{start_url}{page_num}/'.format(start_url=start_url, page_num=item)})
         self._call(params)
 
     def parser(self, soup):
         _list_div = soup.find('div', id='list')
         if not _list_div:
+            logging.warning('//div[@id="list"] not found.')
             return
         table_body = _list_div.find('tbody')
         trs = table_body.findAll('tr')
@@ -53,6 +55,6 @@ class GetterDetail(threading.Thread):
         super(GetterDetail, self).__init__()
 
     def run(self):
-        content = self.getter.get_context(self.link, params=self.params)
+        content = self.getter.get_content(self.link, params=self.params)
         soup = self.getter.makeup_soup(content)
         self.getter.parser(soup)

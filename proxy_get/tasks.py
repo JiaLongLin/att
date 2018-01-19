@@ -49,8 +49,9 @@ def arousal_validity_check():
     activate_list = engine.get()
     proxies_list = []
     for item in activate_list:
-        if proxies_list == conf_parser.VALIDITY_POOL_SIZE:
+        if len(proxies_list) == conf_parser.VALIDITY_POOL_SIZE:
             validity_check_async.apply_async(args=[proxies_list])
+            validity_check_async(proxies_list)
             proxies_list = list()
         proxies_list.append(item)
     validity_check_async.apply_async(args=[proxies_list])

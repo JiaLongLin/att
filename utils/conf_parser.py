@@ -40,3 +40,5 @@ for option in cf.options('LINKS'):
         continue
     value = [item.strip() for item in cf.get('LINKS', option).split(',')]
     LINKS.update({option: value})
+# logging
+LOG_PATH = cf.get('LOGGING', 'log_path')

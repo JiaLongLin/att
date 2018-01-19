@@ -9,14 +9,14 @@ from spider.engine.getter.base import GetterBase
 
 
 class GetterDetail(threading.Thread):
-    def __init__(self, link, params=None):
+    def __init__(self, url, params=None):
         super(GetterDetail, self).__init__()
-        self.link = link
+        self.link = url
         self.params = params
         self.getter = Getter()
 
     def run(self):
-        content = self.getter.get_context(self.link, self.params)
+        content = self.getter.get_content(self.link, self.params)
         self.getter.parser(content)
 
 
@@ -42,14 +42,14 @@ class Getter(GetterBase):
         params = []
         for url in self.links:
             start_url = self.get_start_url(url)
-            context = self.get_context(url)
+            context = self.get_content(url)
             list_nav = self.get_list_nav(context, 'listnav')
             while True:
                 try:
                     param = list_nav.next()
                 except StopIteration:
                     break
-                params.append({'link': start_url, 'params': param})
+                params.append({'url': start_url, 'params': param})
         self._call(params)
 
     def call_threading(self, *args, **kwargs):
